@@ -1,11 +1,12 @@
 {
   "name": "ts-repo",
   "version": "1.0.0",
-  "description": "",
+  "description": "simple ts repo",
   "main": "src/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn  src/index.ts",
+    "dev": "ts-node-dev --respawn src/index.ts",
     "lint": "eslint --fix --ext .ts src/",
+    "start": "yarn build && node dist/index.js",
     "build": "tsc"
   },
   "author": "",
@@ -15,12 +16,12 @@
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "eslint": "^8.53.0",
+    "prettier": "^3.0.3",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "@prisma/client": "^5.5.2",
-    "express": "^4.18.2",
-    "prettier": "^3.0.3"
+    "express": "^4.18.2"
   }
 }

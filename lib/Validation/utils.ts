@@ -38,5 +38,8 @@ export function mergeFieldsError(map1: FieldsError, ...list: FieldsError[]): Fie
 	});
 	return result;
 }
+/**
+ * a function to convert Map to Object
+ */
 export const mapToObject = Object.fromEntries;
 

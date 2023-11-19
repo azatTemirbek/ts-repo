@@ -1,6 +1,6 @@
 import { Logbook } from '@prisma/client';
 import { IUseCase } from '../../../shared/IUseCase';
-import { ILogbookRepository } from '../../shared/ILogbookRepository';
+import { ICreateRepository } from '../../../interfaces/repository/ICreateRepository';
 
 interface IGetLogbookDto {
     id: string;
@@ -18,7 +18,7 @@ class LogbookDto {
 
 export class GetLogbookUseCase implements IUseCase<IGetLogbookDto, LogbookDto>{
 	constructor(
-        private readonly _logbookRepo: ILogbookRepository,
+        private readonly _logbookRepo: ICreateRepository,
 	) { }
     
 	public async execute(input: IGetLogbookDto): Promise<LogbookDto> {

@@ -1,8 +1,8 @@
-import { ILogbookRepository } from './ILogbookRepository';
+import { ICreateRepository } from '../../interfaces/repository/ICreateRepository';
 import { Logbook } from '../domain/Logbook';
 import { PrismaClient } from '@prisma/client';
 
-export class PrismaLogbookRepository implements ILogbookRepository {
+export class PrismaLogbookRepository implements ICreateRepository {
 	constructor(
 		private readonly _prismaClient: PrismaClient,
 	) { }

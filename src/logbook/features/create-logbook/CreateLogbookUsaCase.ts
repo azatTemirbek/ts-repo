@@ -1,6 +1,6 @@
 import { Logbook } from '../../domain/Logbook';
 import { IUseCase } from '../../../shared/IUseCase';
-import { ILogbookRepository } from '../../shared/ILogbookRepository';
+import { ICreateRepository } from '../../../interfaces/repository/ICreateRepository';
 
 interface ICreateLogbookDto {
     name: string;
@@ -12,7 +12,7 @@ export interface ICreateLogbookResult {
 }
 
 export class CreateLogbookUseCase implements IUseCase<ICreateLogbookDto, ICreateLogbookResult> {
-	constructor(private readonly _logbookRepo: ILogbookRepository) { }
+	constructor(private readonly _logbookRepo: ICreateRepository) { }
 	public async execute(input: ICreateLogbookDto): Promise<ICreateLogbookResult> {
 		//TODO: business logic
 		const logbook = new Logbook(input.name, input.userId);

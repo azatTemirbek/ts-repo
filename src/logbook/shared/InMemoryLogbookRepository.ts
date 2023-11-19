@@ -1,7 +1,8 @@
-import { ILogbookRepository } from './ILogbookRepository';
+import { ICreateRepository } from '../../interfaces/repository/ICreateRepository';
+import { IReadRepository } from '../../interfaces/repository/IReadRepository';
 import { Logbook } from '../domain/Logbook';
 
-export class InMemoryLogbookRepository implements ILogbookRepository {
+export class InMemoryLogbookRepository implements ICreateRepository<Logbook>, IReadRepository<Logbook> {
 
 	private readonly _logbooks: Logbook[] = [];
 
@@ -11,7 +12,8 @@ export class InMemoryLogbookRepository implements ILogbookRepository {
 		return true;
 	}
 
-	public async find(id: string): Promise<Logbook | null> {
+	public async findById(id: string): Promise<Logbook | null> {
 		return this._logbooks.find((logbook) => logbook.id === id) ?? null;
 	}
+
 }

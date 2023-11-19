@@ -1,4 +1,4 @@
 
 export interface ICreateRepository<Model> {
-    save(logbook: Model): Promise<boolean>;
+    save(model: Model): Promise<boolean>;
 }

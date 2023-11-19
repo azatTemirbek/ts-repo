@@ -1,4 +1,4 @@
 
 export interface IUpdateRepository<Model> {
-    update(logbook: Model): Promise<boolean>;
+    update(model: Model): Promise<boolean>;
 }

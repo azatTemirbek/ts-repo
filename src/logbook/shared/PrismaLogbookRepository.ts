@@ -1,13 +1,13 @@
-import { ICreateRepository } from '../../interfaces/repository/ICreateRepository';
+import { ICrudRepository } from '../../interfaces/repository';
 import { Logbook } from '../domain/Logbook';
 import { PrismaClient } from '@prisma/client';
 
-export class PrismaLogbookRepository implements ICreateRepository {
+export class PrismaLogbookRepository implements ICrudRepository<Logbook> {
 	constructor(
 		private readonly _prismaClient: PrismaClient,
 	) { }
 
-	public async find(id: string): Promise<Logbook | null> {
+	public async findById(id: string): Promise<Logbook | null> {
 		const logbook = await this._prismaClient.logbook.findUnique({
 			where: {
 				id: id,
@@ -28,6 +28,20 @@ export class PrismaLogbookRepository implements ICreateRepository {
 			}
 		});
 		return true;
+	}
+
+	public async findAll(where: never): Promise<Logbook[]> {
+		throw new Error('Method not implemented.');
+	}
+
+	public async update(model: Logbook): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	public async deleteById(id: string): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	public async delete(model: Logbook): Promise<boolean> {
+		throw new Error('Method not implemented.');
 	}
 
 }

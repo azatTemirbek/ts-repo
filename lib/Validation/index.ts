@@ -1,6 +1,7 @@
 import SumType from 'sums-up';
 import { fieldsError, mergeFieldsError, identity } from './utils';
 import { mapToObject } from './utils';
+import { curryN } from 'ramda';
 
 export type FieldsError = Map<string, string[]>
 
@@ -31,8 +32,8 @@ export class Validation extends SumType<{ [ValidationTypes.Success]: [unknown]; 
 	 * @param name 
 	 * @returns 
 	 */
-	public static fromNullable(value: unknown, name: string) {
-		return value ? Validation.Success(value) : Validation.Failure(fieldsError(name, 'must not be null'));
+	public static fromNullable(value: unknown, name: string, customMessage: string = 'Missing required field') {
+		return value ? Validation.Success(value) : Validation.Failure(fieldsError(name, customMessage));
 	}
 	/**
 	 * a method to create a Validation from a predicate
@@ -52,7 +53,10 @@ export class Validation extends SumType<{ [ValidationTypes.Success]: [unknown]; 
 	 */
 	public concat(other: Validation): Validation {
 		return this.caseOf({
-			Success: () => other,
+			Success: (value) => other.caseOf({
+				Success: () => Validation.Success(value),
+				Failure: (errors) => Validation.Failure(errors)
+			}),
 			Failure: (errors1: FieldsError) => other.caseOf({
 				Success: () => Validation.Failure(errors1),
 				Failure: (errors2) => Validation.Failure(mergeFieldsError(errors1, errors2))
@@ -97,7 +101,7 @@ export class Validation extends SumType<{ [ValidationTypes.Success]: [unknown]; 
 	 * @param fn a function that takes a FieldsError and returns any
 	 * @returns 
 	 */
-	public orElse(fn: (errors: FieldsError) => unknown): unknown {
+	public orElse(fn: (errors: FieldsError) => unknown): unknown | Validation {
 		return this.caseOf({
 			Success: Validation.Success,
 			Failure: (errors) => fn(errors)
@@ -125,3 +129,26 @@ export class Validation extends SumType<{ [ValidationTypes.Success]: [unknown]; 
 
 export const { Success, Failure } = Validation;
 export default Validation;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const base = curryN(1, (value: unknown): Validation => Validation.Success(value));
+
+export const requiredField = curryN(2, (field: string, value: string): Validation => Validation.fromNullable(value, field, `Missing required field: ${field}`));
+export const notEmptyString = curryN(2, (field: string, value: string = ''): Validation => Validation.fromPredicate(() => value?.length > 0, value, field, `Field ${field} should be a non-empty string`));
+export const isNumber = curryN(2, (field: string, value?: never): Validation => Validation.fromPredicate(() => !isNaN(Number(value)), value, field, `Field ${field} should be a number`));
+export const notEmptyObject = curryN(2, (field: string, value = {}): Validation => Validation.fromPredicate(() => Object.keys(value).length > 0, value, field, `Field ${field} should be a non-empty object`));
+export const reduce = curryN(2, (validator: (x: never, xi: number) => Validation, xs: never[] = []) => xs.reduce((acc, x, xi) => acc.concat(validator(x, xi)), Validation.of('')));
+export const notEmptyList = curryN(2, (field: string, value: never[] = []): Validation => Validation.fromPredicate(() => !!value.length, value, field, `Field ${field} should be a non-empty list`));
+export const isBoolean = curryN(2, (field: string, value?: never): Validation => Validation.fromPredicate(() => typeof value === 'boolean', value, field, `Field ${field} should be a boolean`));
+
+export const optional = curryN(2, (check: boolean, other: Validation): Validation => check ? other : Validation.Success(check));
+// export function composeFieldsErrors(...fns:Array<(field: string, value?: never) => Validation>){
+// 	return (field: string, value?: never) => fns.reduce((acc, fn) => acc.concat(fn(field, value)), Validation.Success(value));
+// }
+type ValidateFunction = typeof base
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function shape(shape: Record<string, ValidateFunction>, value: Record<string,unknown>): Validation {
+	return Object.keys(shape).reduce((acc, key) =>  acc.concat(shape[key](value[key])), Validation.of(value));
+}
+export const optional1 = curryN(2, (fn : ValidateFunction, value: unknown): Validation => value ? fn(value) : Validation.Success(value));
+

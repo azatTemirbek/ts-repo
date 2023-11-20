@@ -1,4 +1,4 @@
-import { Validation } from '.';
+import { Validation, isNumber, notEmptyString, optional, optional1, requiredField, shape } from '.';
 import { describe, expect, test } from '@jest/globals';
 
 describe('Validation module', () => {
@@ -35,7 +35,7 @@ describe('Validation module', () => {
 			expect(f1.caseOf({
 				Success: (value) => value,
 				Failure: (errors) => errors
-			})).toEqual(new Map([['name', ['must not be null']]]));
+			})).toEqual(new Map([['name', ['Missing required field']]]));
 		});
 		test('crete Validation:fromPredicate', () => {
 			const s1 = Validation.fromPredicate((value) => value === 'hello', 'hello', 'name');
@@ -65,7 +65,7 @@ describe('Validation module', () => {
 			expect(s1.concat(s2).caseOf({
 				Success: (value) => value,
 				Failure: (errors) => errors
-			})).toBe('world');
+			})).toBe('hello');
 		});
 		test('concat success with failure', () => {
 			expect(s1.concat(f1).caseOf({
@@ -225,6 +225,78 @@ describe('Validation module', () => {
 		test('toString should return variant and data field', () => {
 			expect(s1.toString()).toBe('Success(hello)');
 			expect(f1.toString()).toBe('Failure({"foo":["bar"]}');
+		});
+	});
+	describe('Validation module: helper: requiredField', () => {
+		const s1 = requiredField('field_name', 'field_value');
+		const f1 = requiredField('field_name', '');
+		test('requiredField should return Success if value is not null', () => {
+			expect(s1).toEqual(Validation.Success('field_value'));
+		});
+		test('requiredField should return Failure if value is null', () => {
+			expect(f1).toEqual(Validation.Failure(new Map([['field_name', ['Missing required field: field_name']]])));
+		});
+	});
+	describe('Validation module: helper: notEmptyString', () => {
+		const s1 = notEmptyString('field_name', 'field_value');
+		const f1 = notEmptyString('field_name', '');
+		const f2 = notEmptyString('field_name', undefined);
+		test('notEmptyString should return Success if value is not null', () => {
+			expect(s1).toEqual(Validation.Success('field_value'));
+		});
+		test('notEmptyString should return Failure if value is empty string', () => {
+			expect(f1).toEqual(Validation.Failure(new Map([['field_name', ['Field field_name should be a non-empty string']]])));
+			expect(f2).toEqual(Validation.Failure(new Map([['field_name', ['Field field_name should be a non-empty string']]])));
+		});
+	});
+	describe('Validation module: helper: optional', () => {
+		const s1 = notEmptyString('field_name', 'field_value');
+		const f1 = notEmptyString('field_name', '');
+		test('optional first arg is true should run validation', () => {
+			expect(optional(true, s1)).toEqual(Validation.Success('field_value'));
+			expect(optional(true, f1)).toEqual(Validation.Failure(new Map([['field_name', ['Field field_name should be a non-empty string']]])));
+		});
+		test('optional first arg is true should not run validation', () => {
+			expect(optional(false, s1)).toEqual(Validation.Success(false));
+			expect(optional(false, f1)).toEqual(Validation.Success(false));
+		});
+	});
+	describe('Validation module: helper: shape', () => {
+		test('shape should validate values of the object and return validated data inside', () => {
+			const successPayload = { name: 'field_value1', age: 5 };
+			const sh = shape({
+				name: notEmptyString('name'),
+				age: isNumber('age')
+			}, successPayload);
+			expect(sh).toEqual(Validation.Success(successPayload));
+		});
+		test('shape should validate values of the object and return success but should not validate optional', () => {
+			const optionalPayload = { name: 'valid name', age: '' };
+			const sh = shape({
+				name: notEmptyString('name'),
+				age: optional1(isNumber('age'))
+			}, optionalPayload);
+			expect(sh).toEqual(Validation.Success(optionalPayload));
+		});
+		test('shape should validate values of the object and return errors', () => {
+			const failurePayload = { name: false, age: 's' };
+			const sh = shape({
+				name: notEmptyString('name'),
+				age: isNumber('age')
+			}, failurePayload);
+			expect(sh).toEqual(Validation.Failure(
+				new Map([['name', ['Field name should be a non-empty string']], ['age', ['Field age should be a number']]])
+			));
+		});
+		test('shape should validate values of the object and return errors only if optional value exists', () => {
+			const optionalPayload = { name: false, age: 's' };
+			const sh = shape({
+				name: notEmptyString('name'),
+				age: optional1(isNumber('age')),
+			}, optionalPayload);
+			expect(sh).toEqual(Validation.Failure(
+				new Map([['name', ['Field name should be a non-empty string']], ['age', ['Field age should be a number']]])
+			));
 		});
 	});
 });

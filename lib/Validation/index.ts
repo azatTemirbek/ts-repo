@@ -131,7 +131,12 @@ export const { Success, Failure } = Validation;
 export default Validation;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const base = curryN(1, (value: unknown): Validation => Validation.Success(value));
+// const base1 = curryN(1, (value: any): Validation => Validation.Success(value));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const base2 = curryN(2, (field: string, value: any): Validation => Validation.Success(value));
+// type ValidateFunction = typeof base1
+type ValidateFunction2 = typeof base2
+
 
 export const requiredField = curryN(2, (field: string, value: string): Validation => Validation.fromNullable(value, field, `Missing required field: ${field}`));
 export const notEmptyString = curryN(2, (field: string, value: string = ''): Validation => Validation.fromPredicate(() => value?.length > 0, value, field, `Field ${field} should be a non-empty string`));
@@ -140,15 +145,19 @@ export const notEmptyObject = curryN(2, (field: string, value = {}): Validation 
 export const reduce = curryN(2, (validator: (x: never, xi: number) => Validation, xs: never[] = []) => xs.reduce((acc, x, xi) => acc.concat(validator(x, xi)), Validation.of('')));
 export const notEmptyList = curryN(2, (field: string, value: never[] = []): Validation => Validation.fromPredicate(() => !!value.length, value, field, `Field ${field} should be a non-empty list`));
 export const isBoolean = curryN(2, (field: string, value?: never): Validation => Validation.fromPredicate(() => typeof value === 'boolean', value, field, `Field ${field} should be a boolean`));
+export const number = curryN(2, (field: string, value?: never): Validation => Validation.fromPredicate(() => typeof value === 'number', value, field, `Field ${field} should be a type number`));
 
 export const optional = curryN(2, (check: boolean, other: Validation): Validation => check ? other : Validation.Success(check));
 // export function composeFieldsErrors(...fns:Array<(field: string, value?: never) => Validation>){
 // 	return (field: string, value?: never) => fns.reduce((acc, fn) => acc.concat(fn(field, value)), Validation.Success(value));
 // }
-type ValidateFunction = typeof base
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function shape(shape: Record<string, ValidateFunction>, value: Record<string,unknown>): Validation {
-	return Object.keys(shape).reduce((acc, key) =>  acc.concat(shape[key](value[key])), Validation.of(value));
+export const shape = curryN(2, (shape: Record<string, ValidateFunction2>, value: Record<string, unknown>): Validation => {
+	return Object.keys(shape).reduce((acc, key) => acc.concat(shape[key](key, value[key])), Validation.of(value));
+});
+export const optional1 = curryN(3, (fn : ValidateFunction2, field: string, value: unknown): Validation => value ? fn(field, value) : Validation.Success(value));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function array(validate: ValidateFunction2, values: any[]): Validation {
+	return values.reduce((acc, value) =>  acc.concat(validate(value)), Validation.of(values));
 }
-export const optional1 = curryN(2, (fn : ValidateFunction, value: unknown): Validation => value ? fn(value) : Validation.Success(value));
 

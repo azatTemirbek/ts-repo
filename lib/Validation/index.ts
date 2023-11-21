@@ -155,9 +155,18 @@ export const optional = curryN(2, (check: boolean, other: Validation): Validatio
 export const shape = curryN(2, (shape: Record<string, ValidateFunction2>, value: Record<string, unknown>): Validation => {
 	return Object.keys(shape).reduce((acc, key) => acc.concat(shape[key](key, value[key])), Validation.of(value));
 });
+// An object with errors on extra properties
+export const exact = curryN(2, (shape: Record<string, ValidateFunction2>, value: Record<string, unknown>): Validation => {
+	const keys = Object.keys(value);
+	const errors = keys.reduce((acc, key) => {
+		if (shape[key]) {
+			return acc.concat(shape[key](key, value[key]));
+		}
+		return acc.concat(Validation.Failure(fieldsError(key, `Unexpected field ${key}`)));
+	}, Validation.of(value));
+	return errors;
+});
 export const optional1 = curryN(3, (fn : ValidateFunction2, field: string, value: unknown): Validation => value ? fn(field, value) : Validation.Success(value));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function array(validate: ValidateFunction2, values: any[]): Validation {
-	return values.reduce((acc, value) =>  acc.concat(validate(value)), Validation.of(values));
-}
+export const array = (validate: ValidateFunction2, values: any[]): Validation =>values.reduce((acc, value) =>  acc.concat(validate(value)), Validation.of(values));
 

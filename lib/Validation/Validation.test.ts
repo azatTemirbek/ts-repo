@@ -1,4 +1,4 @@
-import { Validation, array, isNumber, notEmptyString, number, optional, optional1, requiredField, shape } from '.';
+import { Validation, array, exact, isNumber, notEmptyString, number, optional, optional1, requiredField, shape } from '.';
 import { describe, expect, test } from '@jest/globals';
 
 describe('Validation module', () => {
@@ -296,6 +296,64 @@ describe('Validation module', () => {
 			}, optionalPayload);
 			expect(sh).toEqual(Validation.Failure(
 				new Map([['name', ['Field name should be a non-empty string']], ['age', ['Field age should be a number']]])
+			));
+		});
+	});
+	describe('Validation module: helper: exact', () => {
+		test('exact should validate values of the object and return validated data inside', () => {
+			const successPayload = { name: 'field_value1', age: 5 };
+			const sh = exact({
+				name: notEmptyString,
+				age: isNumber
+			}, successPayload);
+			expect(sh).toEqual(Validation.Success(successPayload));
+		});
+		test('exact should validate values of the object and return success but should not validate optional', () => {
+			const optionalPayload = { name: 'valid name', age: '' };
+			const sh = exact({
+				name: notEmptyString,
+				age: optional1(isNumber)
+			}, optionalPayload);
+			expect(sh).toEqual(Validation.Success(optionalPayload));
+		});
+		test('exact should validate values of the object and return errors', () => {
+			const failurePayload = { name: false, age: 's' };
+			const sh = exact({
+				name: notEmptyString,
+				age: isNumber
+			}, failurePayload);
+			expect(sh).toEqual(Validation.Failure(
+				new Map([['name', ['Field name should be a non-empty string']], ['age', ['Field age should be a number']]])
+			));
+		});
+		test('exact should validate values of the object and return errors only if optional value exists', () => {
+			const optionalPayload = { name: false, age: 's' };
+			const sh = exact({
+				name: notEmptyString,
+				age: optional1(isNumber),
+			}, optionalPayload);
+			expect(sh).toEqual(Validation.Failure(
+				new Map([['name', ['Field name should be a non-empty string']], ['age', ['Field age should be a number']]])
+			));
+		});
+		test('exact should validate values of the object and return errors only if optional value exists', () => {
+			const optionalPayload = { name: 'name', age: '1', extra: 'extra' };
+			const sh = exact({
+				name: notEmptyString,
+				age: optional1(isNumber),
+			}, optionalPayload);
+			expect(sh).toEqual(Validation.Failure(
+				new Map([['extra', ['Unexpected field extra']]])
+			));
+		});
+		test('exact should validate values of the object and return errors only if optional value exists', () => {
+			const optionalPayload = { name: 1, age: 'ssss', extra: 'extra' };
+			const sh = exact({
+				name: notEmptyString,
+				age: optional1(isNumber),
+			}, optionalPayload);
+			expect(sh).toEqual(Validation.Failure(
+				new Map([['name', ['Field name should be a non-empty string']], ['age', ['Field age should be a number']], ['extra', ['Unexpected field extra']]])
 			));
 		});
 	});

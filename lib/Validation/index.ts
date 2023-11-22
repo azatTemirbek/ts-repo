@@ -125,6 +125,51 @@ export class Validation extends SumType<{ [ValidationTypes.Success]: [unknown]; 
 			Failure: (errors) => `Failure(${JSON.stringify(mapToObject(errors))}`
 		});	
 	}
+	// VALIDATION METHODS
+	public static createType(params: Tuple2<Func, string>): ValidateFunction {
+		const [predicate, message] = params;
+		return ([field, value, index]: Tuple3<string, unknown, unknown>): Validation => {
+			const msg = message || 'Field {index}{field} is invalid';
+			return Validation.fromPredicate(predicate, value, field, formatUnicorn(msg, {
+				field: field,
+				index: `${index && index + '.'}`,
+				value: `${value}`
+			}));
+		};
+	}
+	public static string([field, value, index]: Tuple3<string, unknown, unknown>): Validation {
+		return Validation.createType([
+			(value: unknown) => typeof value === 'string',
+			'Field {index}{field} should be a type string',
+		])([field, value, index]);
+	}
+
+	public static number([field, value, index]: Tuple3<string, unknown, unknown>): Validation {
+		return Validation.createType([
+			(value: unknown) => typeof value === 'number',
+			'Field {index}{field} should be a type number',
+		])([field, value, index]);
+	}
+
+	public static optional(fn: ValidateFunction): ValidateFunction {
+		return ([field, value, index]: Tuple3<string, unknown, unknown>): Validation => value ? fn([field, value, index]) : Validation.Success(value);
+	}
+
+	public static bool([field, value, index]: Tuple3<string, unknown, unknown>): Validation {
+		return Validation.createType([
+			(value: unknown) => typeof value === 'boolean',
+			'Field {index}{field} should be a type boolean',
+		])([field, value, index]);
+	}
+
+	public static shape(shape: Record<string, ValidateFunction>) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return (params: Tuple3<string, any, unknown> | Record<string, unknown>): Validation => {
+			const value = Array.isArray(params) ? params[1] : params;
+			return Object.keys(shape).reduce((acc, key, index) => acc.concat(shape[key]([key, value[key], index])), Validation.of(value));
+		};
+	}
+
 }
 
 export const { Success, Failure } = Validation;
@@ -170,3 +215,14 @@ export const optional1 = curryN(3, (fn : ValidateFunction2, field: string, value
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const array = (validate: ValidateFunction2, values: any[]): Validation =>values.reduce((acc, value) =>  acc.concat(validate(value)), Validation.of(values));
 
+
+type Func<Params = unknown , ReturnType = boolean> = (value: Params) => ReturnType
+type Tuple3<FIELD_NAME, FIELD_VALUE, FIELD_INDEX = number | undefined> = [FIELD_NAME, FIELD_VALUE, FIELD_INDEX]
+type Tuple2<PredicateFunction = Func, CustomErrorMessage = string> = [PredicateFunction, CustomErrorMessage]
+
+function formatUnicorn(str: string, args: Record<string, string> = {}) {
+	for (const arg in args) str = str.replace(new RegExp(`\\{${arg}\\}`, 'gi'), args[arg]);
+	return str;
+}
+const base1 = ([, value,]: Tuple3<string, unknown, unknown>): Validation => Validation.Success(value);
+type ValidateFunction = typeof base1

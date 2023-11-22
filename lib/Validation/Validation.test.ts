@@ -398,5 +398,37 @@ describe('Validation module', () => {
 			);
 			expect(arr).toEqual(Validation.Success(successPayload));
 		});
+		test('array should validate values of every item and return failure data inside', () => {
+			const successPayload = [{ name: 'valid name', age: 3 }, { name: 'valid name', age: false }];
+			const arr = array(
+				shape({
+					name: notEmptyString,
+					age: number
+				}),
+				successPayload
+			);
+			expect(arr).toEqual(Validation.Failure(
+				new Map([['age', ['Field age should be a type number']]])
+			));
+		});
+	});
+	describe('Testing New api', () => {
+		const addressSchema = Validation.shape({
+			street: Validation.string,
+			number: Validation.number
+		});
+		
+		const schema = Validation.shape({
+			name: Validation.string,
+			age: Validation.optional(Validation.number),
+			address: addressSchema
+		});
+
+		test('provide success payload to schema', () => {
+			const successPayload = { name: 'valid name', age: 3, address: { street: 'street', number: 5 } };
+			const result = schema(successPayload);
+			expect(result).toEqual(Validation.Success(successPayload));
+		});
+		
 	});
 });

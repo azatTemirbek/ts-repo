@@ -8,7 +8,7 @@ const generateField = (field: IField) => {
 		modelPlural: name,
 	});
 	return `
-		${pr ? 'private ' : 'public '}${readonly ? 'readonly ' : ''}${ref}${field.optional&&'?'}: ${type};`
+		${readonly ? 'readonly ' : ''}${ref}${field.optional&&'?'}: ${type};`
 };
 
 const generate = (schema: Schema, fields: IField[]) => {

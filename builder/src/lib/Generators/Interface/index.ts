@@ -8,15 +8,13 @@ const generateField = (field: IField) => {
 		modelPlural: name,
 	});
 	return `
-		${readonly ? 'readonly ' : ''}${ref}${field.optional&&'?'}: ${type};`
+	${readonly ? 'readonly ' : ''}${ref}${field.optional ? '?' : ''}: ${type};`
 };
 
 const generate = (schema: Schema, fields: IField[]) => {
 	const { model, models } = buildNameVariations(schema);
 	const template = `
-
-export interface ${model} {
-	${fields.map(generateField)
+export interface ${model} {${fields.map(generateField).join('')}
 }
 `;
 	return {

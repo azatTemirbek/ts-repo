@@ -40,7 +40,44 @@ export interface Generator {
     };
 }
 
-export enum FieldType {
+export enum ReturnEnums {
+    string = 'string',
+    number = 'number',
+    boolean = 'boolean',
+    date = 'date',
+    void = 'void',
+}
+
+export type IReturnType = {
+    type: ReturnEnums,
+    optional: boolean,
+}
+
+export enum ParamsEnum {
+    string = 'string',
+    number = 'number',
+    boolean = 'boolean',
+    date = 'date',
+    unknown = 'unknown',
+}
+
+export type IParamsType = {
+    name: string
+    type: FieldEnums,
+    optional: boolean,
+    default?: string,
+}
+
+export type IMethodType = {
+    name: string;
+    private: boolean;
+    static: boolean;
+    returnType: IReturnType;
+    async: boolean;
+    args: IParamsType[];
+}
+
+export enum FieldEnums {
     string = 'string',
     number = 'number',
     boolean = 'boolean',
@@ -49,7 +86,7 @@ export enum FieldType {
 
 export type IField = {
     name: string
-    type: FieldType,
+    type: FieldEnums,
     readonly: boolean,
     private: boolean,
     optional: boolean,

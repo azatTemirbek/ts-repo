@@ -1,5 +1,5 @@
 import {Args, Command, Flags, ux} from '@oclif/core'
-import { FieldType, IField, Schema } from '../../lib/Modeling/meta-models.js'
+import { FieldEnums, IField, Schema } from '../../lib/Modeling/meta-models.js'
 import { DomainGenerator } from '../../lib/Generators/Domain/index.js'
 import inquirer from 'inquirer'
 import { isExists, exportToFile} from '../../lib/utils/file.js'
@@ -32,18 +32,19 @@ export default class CreateDomain extends Command {
 
     const fields: IField[] = []
 
-    // do {
-    //   const name = await ux.prompt('Provide Field Name');
-    //   const { type } = await inquirer.prompt([{
-    //     name: 'type',
-    //     message: 'select a type',
-    //     type: 'list',
-    //     choices: Object.values(FieldType).map(name=>({name})),
-    //   }])
-    //   const readonly = await confirm('readonly');
-    //   const optional = await confirm('optional');
-    //   fields.push({ name, type, readonly, private: pr, optional })
-    // } while (await confirm('Add another field?'));
+    do {
+      const name = await ux.prompt('Provide Field Name');
+      const { type } = await inquirer.prompt([{
+        name: 'type',
+        message: 'select a type',
+        type: 'list',
+        choices: Object.values(FieldEnums).map(name=>({name})),
+      }])
+      const readonly = await confirm('readonly');
+      const pr = await confirm('private');
+      const optional = await confirm('optional');
+      fields.push({ name, type, readonly, private: pr, optional })
+    } while (await confirm('Add another field?'));
   
     const { template, fileName: fname , title = ''} = DomainGenerator.generate(schema, fields)
     
@@ -54,6 +55,9 @@ export default class CreateDomain extends Command {
       await exportToFile(fileName, template)
       this.log(`${title} Done writing to ${fileName}`)
     }
+    const jsonPath = `data/models/${model}.json`
+    await exportToFile(jsonPath, JSON.stringify({schema, fields}, null, 2))
+    this.log(`${title} Done writing to json ${fileName}`)
     
     if(flags.verbose){
       this.log(template);

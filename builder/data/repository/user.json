@@ -1,0 +1,25 @@
+{
+  "schema": {
+    "model": "user",
+    "modelPlural": "users"
+  },
+  "fields": [
+    {
+      "async": true,
+      "static": false,
+      "private": false,
+      "name": "getUserById",
+      "args": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false
+        }
+      ],
+      "returnType": {
+        "type": "void",
+        "optional": false
+      }
+    }
+  ]
+}

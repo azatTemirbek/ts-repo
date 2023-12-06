@@ -1,0 +1,43 @@
+{
+  "schema": {
+    "model": "IField",
+    "modelPlural": "IFields"
+  },
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "readonly": false,
+      "private": false,
+      "optional": false
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "readonly": false,
+      "private": false,
+      "optional": false
+    },
+    {
+      "name": "readonly",
+      "type": "boolean",
+      "readonly": false,
+      "private": false,
+      "optional": false
+    },
+    {
+      "name": "private",
+      "type": "boolean",
+      "readonly": false,
+      "private": false,
+      "optional": false
+    },
+    {
+      "name": "optional",
+      "type": "boolean",
+      "readonly": false,
+      "private": false,
+      "optional": false
+    }
+  ]
+}

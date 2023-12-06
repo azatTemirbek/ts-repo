@@ -1,0 +1,15 @@
+{
+  "schema": {
+    "model": "user",
+    "modelPlural": "users"
+  },
+  "fields": [
+    {
+      "name": "age",
+      "type": "string",
+      "readonly": true,
+      "private": true,
+      "optional": true
+    }
+  ]
+}

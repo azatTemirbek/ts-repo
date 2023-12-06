@@ -1,11 +1,11 @@
-import {Args, Command, Flags, ux} from '@oclif/core'
-import { FieldType, IField, Schema } from '../../lib/Modeling/meta-models.js'
-import { DomainGenerator } from '../../lib/Generators/Domain/index.js'
+import { Args, Command, Flags, ux } from '@oclif/core'
+import { FieldEnums, IField, Schema } from '../../lib/Modeling/meta-models.js'
 import inquirer from 'inquirer'
-import { isExists, exportToFile} from '../../lib/utils/file.js'
+import { isExists, exportToFile } from '../../lib/utils/file.js'
 import { confirm } from '../../utils/index.js'
+import { InterfaceGenerator } from '../../lib/Generators/Interface/index.js'
 
-export default class CreateDomain extends Command {
+export default class CreateInterface extends Command {
   static description = 'describe the command here'
 
   static examples = [
@@ -24,7 +24,7 @@ export default class CreateDomain extends Command {
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(CreateDomain)
+    const {args, flags} = await this.parse(CreateInterface)
 
     const model = flags.name ?? await ux.prompt('Provide Model Name');
     const modelPlural = await ux.prompt('Provide Plural Model Name', { default: model + 's' });
@@ -38,15 +38,14 @@ export default class CreateDomain extends Command {
         name: 'type',
         message: 'select a type',
         type: 'list',
-        choices: Object.values(FieldType).map(name=>({name})),
+        choices: Object.values(FieldEnums).map(name=>({name})),
       }])
       const readonly = await confirm('readonly');
-      const pr = await confirm('private');
       const optional = await confirm('optional');
-      fields.push({ name, type, readonly, private: pr, optional })
+      fields.push({ name, type, readonly, private: false, optional })
     } while (await confirm('Add another field?'));
   
-    const { template, fileName: fname , title = ''} = DomainGenerator.generate(schema, fields)
+    const { template, fileName: fname , title = ''} = InterfaceGenerator.generate(schema, fields)
     
     const fileName = args.file ?? fname
 
@@ -55,6 +54,9 @@ export default class CreateDomain extends Command {
       await exportToFile(fileName, template)
       this.log(`${title} Done writing to ${fileName}`)
     }
+    const jsonPath = `data/interfaces/${model}.json`
+    await exportToFile(jsonPath, JSON.stringify({schema, fields}, null, 2))
+    this.log(`${title} Done writing to json ${fileName}`)
     
     if(flags.verbose){
       this.log(template);

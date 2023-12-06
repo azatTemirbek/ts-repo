@@ -16,4 +16,9 @@ export class InMemoryLogbookRepository implements ICreateRepository<Logbook>, IR
 		return this._logbooks.find((logbook) => logbook.id === id) ?? null;
 	}
 
+	static async findById(id: unknown): Promise<Logbook | null> {
+		console.log('findById', id);
+		return null;
+	}
+
 }

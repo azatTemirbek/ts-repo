@@ -3,9 +3,7 @@ export const confirm = async (message: string = 'select a type', defaultValue = 
     const { type } = await inquirer.prompt([{
         name: 'type',
         message,
-        type: 'list',
-        choices: ['yes', 'no'],
-        default: defaultValue ? 'yes' : 'no'
+        type: 'confirm',
     }])
-    return type === 'yes'
+    return type
 }

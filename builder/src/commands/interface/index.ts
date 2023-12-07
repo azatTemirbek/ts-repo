@@ -31,19 +31,35 @@ export default class CreateInterface extends Command {
     const schema: Schema = { model, modelPlural };
 
     const fields: IField[] = []
-
+    let add = false
     do {
       const name = await ux.prompt('Provide Field Name');
-      const { type } = await inquirer.prompt([{
-        name: 'type',
-        message: 'select a type',
-        type: 'list',
-        choices: Object.values(FieldEnums).map(name=>({name})),
-      }])
-      const readonly = await confirm('readonly');
-      const optional = await confirm('optional');
+      const { type, readonly, optional, addAnotherField } = await inquirer.prompt([
+        {
+          name: 'type',
+          message: 'select a type',
+          type: 'list',
+          choices: Object.values(FieldEnums).map(name => ({ name })),
+        },
+        {
+          name: 'readonly',
+          message: 'is readonly',
+          type: 'confirm',
+        },
+        {
+          name: 'optional',
+          message: 'is optional',
+          type: 'confirm',
+        },
+        {
+          name: 'addAnotherField',
+          message: 'Add another field?',
+          type: 'confirm',
+        }
+      ])
       fields.push({ name, type, readonly, private: false, optional })
-    } while (await confirm('Add another field?'));
+      add = addAnotherField
+    } while (add);
   
     const { template, fileName: fname , title = ''} = InterfaceGenerator.generate(schema, fields)
     
